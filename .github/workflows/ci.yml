@@ -1,0 +1,35 @@
+name: Pipeline Selenium CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      selenium:
+        image: selenium/standalone-chrome
+        ports:
+          - 4444:4444
+        options: --shm-size=2g
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install maven dependencies
+        run: mvn clean install -DSkipTests
+
+      - name: Execute Selenium tests
+        run: mvn test
+
