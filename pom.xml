@@ -31,8 +31,8 @@
         <!-- JUnit 5 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.10.2</version>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.8.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -51,9 +51,6 @@
                             <value>io.qameta.allure.junitplatform.AllureJunitPlatform</value>
                         </property>
                     </properties>
-                    <includes>
-                        <include>**/*Test.java</include>
-                    </includes>
                 </configuration>
             </plugin>
             <!-- Allure Maven Plugin -->
