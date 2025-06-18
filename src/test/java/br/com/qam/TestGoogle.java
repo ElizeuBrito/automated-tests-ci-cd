@@ -23,12 +23,11 @@ public class TestGoogle {
 
         driver.get("https://www.google.com");
         WebElement searchBox = driver.findElement(By.name("q"));
-        searchBox.sendKeys("OpenAI ChatGPT");
+        searchBox.sendKeys("Selenium webdriver");
         searchBox.submit();
 
         Thread.sleep(3000);
 
         driver.quit();
-
     }
 }

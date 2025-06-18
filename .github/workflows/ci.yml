@@ -1,4 +1,4 @@
-name: Pipeline Selenium CI
+name: Run Tests, Publish Report and Send Email with details
 
 on:
   push:
@@ -7,8 +7,11 @@ on:
     branches: [ "main"]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     services:
       selenium:
@@ -27,8 +30,10 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install maven dependencies
-        run: mvn clean install -DSkipTests
+      - name: Install maven
+        uses: stCarolas/setup-maven@v4
+        with:
+          maven-version: '3.9.5'
 
       - name: Execute Selenium tests
         run: mvn clean test
@@ -36,21 +41,49 @@ jobs:
       - name: Generate Allure Report
         run: mvn allure:report
 
+      - name: Extract tests metrics
+        id: tests
+        run: |
+          PASSED=$(grep -o 'Tests run: [0-9]*, Failures: 0' target/surefire-reports/*.txt | wc -l)
+          TOTAL=$(grep -o 'Tests run: [0-9]*' target/surefire-reports/*.txt | grep -o '[0-9]*' | awk '{s+=$1} END {print s}')
+          FAILURES=$(grep -o 'Failures: [0-9]*' target/surefire-reports/*.txt | grep -o '[0-9]*' | awk '{s+=$1} END {print s+0}')
+          
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "failures=$FAILURES" >> $GITHUB_OUTPUT
+
+      - name: Publish Allure report on GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./target/site/allure-maven-plugin
+
       - name: Send allure report through e-mail
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
-          server_port: 465
+          server_port: 587
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASS }}
-          subject: "Selenium Project - Allure Test Reports"
+          subject: "✅ Automated Tests - Automated Tests Project"
           to: donizete.elizeu.1979@gmail.com
-          from: elizeu.brito@gmail.com
-          secure: true
-          attachments: |
-            target/surefire-reports/*.html
-            target/site/allure-maven-plugin/index.html
+          from: ${{ secrets.EMAIL_USER }}
           body: |
-            Hi there, here you go Selenium Project with Allure Tests Report
+            Hi there,
+            
+            The tests execution was finished successfully.
+            
+            🔗 Access the Allure Report through the following link: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+            
+            🧪 Tests Results:
+            - Total of tests: ${{ steps.tests.outputs.total }}
+            - ✅ Passed: ${{ steps.tests.outputs.passed }}
+            - ❌ Failed: ${{ steps.tests.outputs.failures }}
+            
+            ✔️ This report was generated automatically by GitActions CI/CD pipeline.
+            
+            Sincerely,
+            AST QA
             
 
