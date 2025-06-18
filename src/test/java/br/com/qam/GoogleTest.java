@@ -19,7 +19,7 @@ import java.net.URL;
 @Feature("Searches passing criteria")
 @Story("Search with success")
 @DisplayName("Valid search with criteria test")
-public class TestGoogle {
+public class GoogleTest {
 
     @Test
     @Description("Tests if the search was successfully")
