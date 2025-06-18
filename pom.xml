@@ -45,6 +45,9 @@
                             <value>io.qameta.allure.junitplatform.AllureJunitPlatform</value>
                         </property>
                     </properties>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
                 </configuration>
             </plugin>
 
